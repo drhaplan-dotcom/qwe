@@ -1,4 +1,2 @@
-
 @echo off
-echo hello burger
-pause
+powershell -NoExit -Command "Write-Host 'hello burger'"
