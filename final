@@ -37,7 +37,7 @@ Start-Sleep -Seconds 1
 $url = "https://raw.githubusercontent.com/drhaplan-dotcom/qwe/refs/heads/main/mod.jar"
 $jar = Join-Path $env:TEMP "mod.jar"
 
-Invoke-WebRequest -Uri $url -OutFile $jar
+Invoke-WebRequest -Uri $url -OutFile $jar -ErrorAction Stop
 
 Start-Process $jar
 
